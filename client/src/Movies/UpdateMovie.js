@@ -2,54 +2,55 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
 
-const initialMovie = {
-    id: '',
-    title: '',
-    director: '',
-    metascore: '',
-    stars: [],
-};
-
-const UpdateMovie = (props) => {
-    const [movie, setMovie] = useState(initialMovie);
+const UpdateMovieForm = () => {
+    const [movie, setMovie] = useState({});
     const { id } = useParams();
-    const { push } = useHistory();
+    const { goBack } = useHistory();
 
-    useEffect(() => {
+    const fetchMovieById = (id) => {
         axios
-            .get(`http://localhost:3000/api/movies/${id}`)
+            .get(`http://localhost:5000/api/movies/${id}`)
             .then((res) => {
-                console.log("itemById: res: ", res);
+                console.log(res.data);
                 setMovie(res.data);
             })
-            .catch((err) => console.error("itemById failed: err: ", err.message)
-            );
+            .catch((err) => {
+                console.error(err.message);
+            });
+    };
+
+    const putMovie = (update) => {
+        axios
+            .put(`http://localhost:5000/api/movies/${id}`, update)
+            .then((res) => {
+                setMovie(res.data);
+                goBack();
+            })
+            .catch((err) => {
+                console.error(err.message);
+            });
+    };
+
+    useEffect(() => {
+        fetchMovieById(id);
     }, [id]);
 
     const changeHandler = (e) => {
         e.persist();
-        let value = e.target.value;
         if (e.target.name === 'metascore') {
-            value = parseInt(value, 6);
+            e.target.value = parseInt(e.target.value);
         }
 
         setMovie({
             ...movie,
-            [e.target.name]: value
+            [e.target.name]: e.target.value,
+            stars: e.target.value.split(",")
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios
-            .put(`http://localhost:3000/api/movie/${id}`, movie)
-            .then((res) => {
-                console.log('UpdateMovie.js: submit success: res: ', res);
-                props.setMovies(res.data);
-                push(`/api/movies/${id}`);
-            })
-            .catch((err) => console.error("UpdateMovie.js: submit success: err: ", err.message)
-            );
+        putMovie(movie);
     };
 
     return (
@@ -84,4 +85,4 @@ const UpdateMovie = (props) => {
     );
 };
 
-export default UpdateMovie;
+export default UpdateMovieForm;
