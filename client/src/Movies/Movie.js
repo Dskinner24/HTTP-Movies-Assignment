@@ -26,6 +26,24 @@ function Movie({ addToSavedList }) {
     return <div>Loading movie information...</div>;
   }
 
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    addToSavedList.history.push(`/update-movie/${params.id}`);
+  };
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+
+    axios
+      .delete(`http://localhost:3001/api/movies/${params.id}`)
+      .then((res) => {
+        params.setMovie(res.data);
+        params.history.push('/movies');
+      })
+      .catch((err) => console.error("Movie.js: delete failed: err: ", err.message)
+      );
+  };
+
   return (
     <div className="save-wrapper">
       <MovieCard movie={movie} />
@@ -33,6 +51,12 @@ function Movie({ addToSavedList }) {
       <div className="save-button" onClick={saveMovie}>
         Save
       </div>
+      <button onClick={handleUpdate}>
+        Edit
+      </button>
+      <button onClick={handleDelete}>
+        Delete
+      </button>
     </div>
   );
 }
